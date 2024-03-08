@@ -12,7 +12,6 @@
 7) birthdays                               Show all birthdays for the next week.
 8) hello                                   Receive "Hello" from the bot.
 9) close OR exit                           Close the program.
-10) help                                   Get this list of commands.
 '''
 
 from classes import AddressBook, Record
@@ -38,45 +37,49 @@ def parse_input(user_input):
 @input_error
 def add_contact(args, contacts):
     name, phone = args
-    contacts[name] = phone
+    record = Record(name)
+    record.add_phone(phone)
+    contacts.add_record(record)
     return "Contact added."
 
 @input_error
 def change_contact(args, contacts):
-    name, phone = args
-    if name in contacts:
-        contacts[name] = phone
-        return "Contact updated."
-    else:
-        return "Contact not found."
+    name = args[0]
+    rec = contacts.find(name)
+    new_phone = args[1]
+    old_phone = str(rec.find_old_phone())
+    rec.edit_phone(old_phone, new_phone)
+    return "Contact updated."
 
 @input_error
 def show_contact(args, contacts):
-    name = args[0].lower()  # Перетворення імені на нижній регістр
-    for contact_name, phone in contacts.items():
-        if contact_name.lower() == name:
-            return phone
-        return "Contact not found."
+    name = args[0]
+    rec = contacts.find(name)
+    phone = contacts[name]
+    return (phone)
 
 @input_error
 def show_all_contacts(contacts):
-    if not contacts:
-        return "No contacts found."
-    return "\n".join([f"{name}: {phone}" for name, phone in contacts.items()])
+    for name, record in contacts.data.items():
+        print(record)
+        break
+
 
 @input_error
 def add_birthday(args, contacts):
     name, birthday = args
     if name in contacts:
         record = contacts[name]
-        if not record.birthday:
-            record.add_birthday(birthday)
-            return "Birthday added."
-        else:
-            return "Birthday already exists for this contact."
+        record.add_birthday(birthday)
+        return "Birthday added."
     else:
         return "Contact not found."
-    
+
+@input_error
+def show_birthday(args, contacts):
+    name = args[0]
+    rec = contacts.find(name)
+    return((rec.show_birthday()))
     
 @input_error
 def birthdays(contacts):
@@ -85,17 +88,6 @@ def birthdays(contacts):
         return "No upcoming birthdays this week."
     return "Upcoming birthdays:\n" + "\n".join(upcoming_birthdays)
     
-@input_error
-def show_birthday(args, contacts):
-    name = args[0]
-    if name in contacts:
-        record = contacts[name]
-        if record.birthday:
-            return f"{name}'s birthday is on {record.birthday}"
-        else:
-            return f"{name} doesn't have a birthday set."
-    else:
-        return "Contact not found."
 
 def main():
     contacts = AddressBook()
